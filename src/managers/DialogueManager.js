@@ -116,6 +116,7 @@ export default class DialogueManager {
 
   advanceDialogue() {
     if (!this.isDialogueActive) return;
+    if (!this.activeDialogue) return; // AI still thinking — dialogue not ready yet, ignore keypress
 
     if (this.isWriting) {
       // Skip typing effect and show entire line immediately
