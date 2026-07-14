@@ -21,8 +21,6 @@ export default class GameStateManager {
 
     // Start broadcast loop
     this._startBroadcastLoop();
-
-    console.log('[GameStateManager] 📡 Live state broadcasting started (2s interval)');
   }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
@@ -45,7 +43,6 @@ export default class GameStateManager {
       this.intervalId = null;
     }
     this.broadcastChannel.close();
-    console.log('[GameStateManager] Broadcast stopped.');
   }
 
   // ─── Private ────────────────────────────────────────────────────────────────
@@ -65,8 +62,8 @@ export default class GameStateManager {
       const payload = JSON.stringify(state);
       localStorage.setItem('rpg_live_state', payload);
       this.broadcastChannel.postMessage(state);
-    } catch (err) {
-      console.warn('[GameStateManager] Broadcast failed:', err.message);
+    } catch {
+      // Swallow broadcast errors silently to avoid console spam
     }
   }
 

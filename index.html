@@ -194,6 +194,42 @@
           </div>
         </div>
       </div>
+
+      <!-- Action Simulation Panel Overlay -->
+      <div id="action-panel-overlay" class="action-panel-hidden">
+        <div id="action-panel-box">
+          <div id="action-panel-header">
+            <h2>⚡ Simulate Action</h2>
+            <button id="action-panel-close-btn">&times;</button>
+          </div>
+          <div id="action-panel-content">
+            <div class="action-panel-column" id="action-categories-pane">
+              <h3 class="pane-title">Categories</h3>
+              <div id="action-panel-categories">
+                <!-- Injected programmatically -->
+              </div>
+            </div>
+            <div class="action-panel-column" id="action-list-pane">
+              <h3 class="pane-title">Actions</h3>
+              <div id="action-panel-list-container">
+                <!-- Injected programmatically -->
+              </div>
+            </div>
+            <div class="action-panel-column" id="action-details-pane">
+              <h3 class="pane-title">Event Details</h3>
+              <div id="action-panel-details">
+                <p class="empty-details-msg">Select an action to see details</p>
+              </div>
+            </div>
+          </div>
+          <div id="action-panel-footer">
+            <span class="instruction-badge">TAB</span> Close |
+            <span class="instruction-badge">◀▶</span> Sections |
+            <span class="instruction-badge">▲▼</span> Select |
+            <span class="instruction-badge">ENTER</span> Execute
+          </div>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

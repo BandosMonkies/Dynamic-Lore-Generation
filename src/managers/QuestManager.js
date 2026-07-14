@@ -126,13 +126,11 @@ export default class QuestManager {
       // Grant gold
       if (quest.rewards.gold && this.game.inventoryManager) {
         this.game.inventoryManager.addGold(quest.rewards.gold);
-        console.log(`[Rewards] Gained ${quest.rewards.gold} Gold.`);
       }
       // Grant items
       if (quest.rewards.items && this.game.inventoryManager) {
         quest.rewards.items.forEach(item => {
           this.game.inventoryManager.addItem(item.id, item.quantity);
-          console.log(`[Rewards] Gained item "${item.id}" x ${item.quantity}.`);
         });
       }
     }
@@ -142,7 +140,6 @@ export default class QuestManager {
       const nextQuest = this.quests.find(q => q.id === quest.nextQuestId);
       if (nextQuest && nextQuest.status === 'locked') {
         nextQuest.status = 'available';
-        console.log(`[Quests] Next quest unlocked: "${nextQuest.title}"`);
       }
     }
 

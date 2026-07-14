@@ -57,7 +57,6 @@ export default class InventoryManager {
   addItem(itemId, quantity = 1) {
     const itemInfo = this.itemsData[itemId];
     if (!itemInfo) {
-      console.warn(`[Inventory] Item ID "${itemId}" not found in items.js.`);
       return false;
     }
 
@@ -85,7 +84,6 @@ export default class InventoryManager {
       const emptyIndex = this.slots.findIndex(s => s === null);
       if (emptyIndex === -1) {
         // Inventory is full
-        console.warn(`[Inventory] Failed to add item "${itemId}". Inventory is full!`);
         this.renderInventory();
         return false;
       }
@@ -291,7 +289,6 @@ export default class InventoryManager {
     if (!itemInfo || !itemInfo.equipSlot) return;
 
     if (!this.game.equipmentManager) {
-      console.warn("[Inventory] EquipmentManager is not registered on game.");
       return;
     }
 
@@ -417,8 +414,7 @@ export default class InventoryManager {
   showNotification(title, message) {
     if (this.game.questManager) {
       this.game.questManager.showNotification(title, message);
-    } else {
-      console.log(`[Notification] ${title}: ${message}`);
     }
+    // Silent fallback when questManager not ready
   }
 }

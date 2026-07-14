@@ -33,7 +33,7 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Outfit', sans-serif;
-      font-size: 14px;
+      font-size: 16px;
       overflow: hidden;
     }
 
@@ -74,7 +74,7 @@
       gap: 1px;
     }
     .world-stat-label {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: 1px;
       color: var(--text-dim);
@@ -82,7 +82,7 @@
     }
     .world-stat-value {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
+      font-size: 15px;
       color: var(--cyan);
       font-weight: 500;
     }
@@ -137,13 +137,13 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 16px;
+      padding: 12px 16px;
       cursor: pointer;
       border: none;
       background: none;
       color: var(--text);
       font-family: 'Outfit', sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       width: 100%;
       text-align: left;
       transition: all 0.15s ease;
@@ -235,15 +235,15 @@
     .npc-identity { flex: 1; }
 
     .npc-name {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 700;
       color: #e5e6e7;
       line-height: 1.2;
     }
     .npc-role {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-dim);
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
     .npc-badges {
@@ -257,9 +257,9 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 12px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       border: 1px solid;
     }
@@ -287,17 +287,17 @@
     .detail-block.full { grid-column: 1 / -1; }
 
     .detail-label {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 1.2px;
       text-transform: uppercase;
       color: var(--text-dim);
-      margin-bottom: 6px;
+      margin-bottom: 7px;
     }
 
     .detail-value {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text);
     }
 
@@ -321,21 +321,68 @@
       transition: width 0.4s ease;
     }
 
-    /* Memory log */
-    .memory-empty {
+    /* Memory log — prominent section */
+    .memory-section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--cyan-border);
+    }
+    .memory-count-badge {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      border: 1px solid var(--cyan-border);
+    }
+    .memory-empty {
+      font-size: 13px;
       color: var(--text-dim);
       font-style: italic;
-      padding: 4px 0;
+      padding: 10px 0;
     }
     .memory-entry {
-      font-size: 11px;
-      color: var(--text);
-      padding: 4px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      line-height: 1.4;
+      padding: 10px 12px;
+      border-radius: 7px;
+      margin-bottom: 7px;
+      line-height: 1.5;
+      font-size: 13px;
     }
-    .memory-entry:last-child { border-bottom: none; }
+    .memory-entry.witnessed {
+      background: rgba(46,204,113,0.07);
+      border: 1px solid rgba(46,204,113,0.2);
+    }
+    .memory-entry.rumour {
+      background: rgba(230,126,34,0.07);
+      border: 1px solid rgba(230,126,34,0.2);
+    }
+    .memory-type-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      margin-right: 6px;
+    }
+    .memory-type-tag.witnessed { color: var(--green); }
+    .memory-type-tag.rumour    { color: var(--orange); }
+    .memory-text {
+      color: var(--text);
+    }
+    .memory-acc {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-left: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .memory-entry:last-child { margin-bottom: 0; }
 
     /* Position */
     .pos-text {
@@ -605,8 +652,8 @@ channel.addEventListener('message', event => {
     if (stored) {
       handleStateUpdate(JSON.parse(stored));
     }
-  } catch (e) {
-    console.warn('[Dashboard] Could not read initial state:', e);
+  } catch {
+    // Silently ignore — game tab may not be open yet
   }
 })();
 
@@ -724,10 +771,22 @@ function renderNPCCard(npc) {
     relHTML = `<div class="memory-empty">No tracked relationships</div>`;
   }
 
-  // Memory log
-  const memHTML = (npc.memoryLog && npc.memoryLog.length > 0)
-    ? npc.memoryLog.map(m => `<div class="memory-entry">${m}</div>`).join('')
-    : `<div class="memory-empty">Memory system not yet active — log will populate here</div>`;
+  // Memory log — structured objects from MemoryManager
+  const memCount = (npc.memoryLog && npc.memoryLog.length) || 0;
+  const memHTML = memCount > 0
+    ? npc.memoryLog.map(m => {
+        const isRumour  = !!m.fromRumor;
+        const typeClass = isRumour ? 'rumour' : 'witnessed';
+        const typeLabel = isRumour ? 'RUMOUR' : 'WITNESSED';
+        const accTag    = isRumour
+          ? `<span class="memory-acc">(acc: ${Math.round((m.accuracy || 0) * 100)}%)</span>`
+          : '';
+        return `<div class="memory-entry ${typeClass}">
+          <span class="memory-type-tag ${typeClass}">[${typeLabel}]</span>
+          <span class="memory-text">${m.icon || '💬'} ${m.text}</span>${accTag}
+        </div>`;
+      }).join('')
+    : `<div class="memory-empty">No memories yet — simulate actions using TAB in the game</div>`;
 
   return `
   <div class="npc-card">
@@ -765,8 +824,11 @@ function renderNPCCard(npc) {
         <div class="detail-label">Relationships</div>
         ${relHTML}
       </div>
-      <div class="detail-block full">
-        <div class="detail-label">🧠 Memory Log</div>
+      <div class="detail-block full" style="border: 1px solid var(--cyan-border); background: rgba(11,12,16,0.6);">
+        <div class="memory-section-header">
+          🧠 Memory Log
+          <span class="memory-count-badge">${memCount} entr${memCount !== 1 ? 'ies' : 'y'}</span>
+        </div>
         ${memHTML}
       </div>
     </div>
