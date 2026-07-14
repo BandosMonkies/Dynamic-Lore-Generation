@@ -1,0 +1,54 @@
+# ── Node / JavaScript ──────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+*.local
+
+# ── ML Model Weights (too large for GitHub — download separately) ─────────────
+# The Qwen-NPC-INT4 folder holds a ~2 GB model.safetensors file.
+# Keep server.py, start_npc_server.sh, and all config/code — only exclude weights.
+ML-MODEL-SERVER/Qwen-NPC-INT4/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+.venv/
+venv/
+env/
+
+# ── Environment & Secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── OS generated files ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# ── Editor / IDE ──────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

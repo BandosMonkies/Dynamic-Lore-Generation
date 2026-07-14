@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Three Villages - RPG Foundation</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <script>
+      window.onerror = function (msg, url, lineNo, columnNo, error) {
+        var div = document.createElement('div');
+        div.id = 'debug-error-overlay';
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.backgroundColor = 'rgba(231, 76, 60, 0.95)';
+        div.style.color = 'white';
+        div.style.padding = '20px';
+        div.style.zIndex = '999999';
+        div.style.fontFamily = 'monospace';
+        div.style.fontSize = '14px';
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+        div.innerHTML = '<h3>[RPG Runtime Error]</h3>' +
+          '<b>Message:</b> ' + msg + '<br>' +
+          '<b>File:</b> ' + url + '<br>' +
+          '<b>Line:</b> ' + lineNo + ' <b>Col:</b> ' + columnNo + '<br>' +
+          '<b>Stack Trace:</b><br>' + (error && error.stack ? error.stack : 'N/A');
+        document.body.appendChild(div);
+        return false;
+      };
+    </script>
+  </head>
+  <body>
+    <!-- Quest / System Notifications -->
+    <div id="notifications-container"></div>
+
+    <div id="game-container">
+      <!-- World Simulation HUD clock -->
+      <div id="world-clock-hud">
+        <div class="hud-time-row">
+          <span class="hud-label">DAY</span>
+          <span id="hud-day-val" class="hud-value">1</span>
+        </div>
+        <div class="hud-time-row">
+          <span class="hud-label">TIME</span>
+          <span id="hud-time-val" class="hud-value">08:00</span>
+        </div>
+        <div class="hud-time-row">
+          <span id="hud-weather-val" class="hud-value">☀️ CLEAR</span>
+        </div>
+      </div>
+
+      <!-- Save/Load Persistence UI Controls -->
+      <div id="persistence-hud">
+        <button id="hud-save-btn" class="pers-btn">💾 SAVE</button>
+        <button id="hud-load-btn" class="pers-btn">📂 LOAD</button>
+      </div>
+      <!-- Premium HTML/CSS Dialogue Overlay -->
+      <div id="dialogue-overlay" class="dialogue-hidden">
+        <div id="dialogue-box">
+          <div id="dialogue-header">
+            <span id="dialogue-name">Speaker</span>
+            <span id="dialogue-role">Role</span>
+          </div>
+          <div id="dialogue-body">
+            <p id="dialogue-text">Dialogue text...</p>
+          </div>
+          <!-- AI Thinking Indicator — shown while ML server processes the request -->
+          <div id="ai-thinking-indicator">
+            <span></span><span></span><span></span>
+          </div>
+          <div id="dialogue-indicator">Space/Enter to continue</div>
+        </div>
+      </div>
+
+      <!-- Premium HTML/CSS Quest Log Overlay -->
+      <div id="quest-log-overlay" class="quest-log-hidden">
+        <div id="quest-log-box">
+          <div id="quest-log-header">
+            <h2>Quest Log</h2>
+            <button id="quest-log-close-btn">&times;</button>
+          </div>
+          <div id="quest-log-content">
+            <div id="quest-log-sidebar">
+              <div class="quest-log-tabs">
+                <button id="tab-active" class="active-tab">Active</button>
+                <button id="tab-completed">Completed</button>
+              </div>
+              <ul id="quest-list">
+                <!-- Injected programmatically -->
+              </ul>
+            </div>
+            <div id="quest-log-details">
+              <!-- Injected programmatically -->
+              <p class="empty-details-msg">Select a quest to see details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium HTML/CSS Inventory Overlay -->
+      <div id="inventory-overlay" class="inventory-hidden">
+        <div id="inventory-box">
+          <div id="inventory-header">
+            <h2>Inventory</h2>
+            <button id="inventory-close-btn">&times;</button>
+          </div>
+          <div id="inventory-content">
+            <div id="inventory-slots-container">
+              <div id="inventory-grid">
+                <!-- Slots will be injected dynamically -->
+              </div>
+              <div id="inventory-gold-bar">
+                <span class="gold-label">Gold:</span>
+                <span id="inventory-gold-amount">0</span>
+              </div>
+            </div>
+            
+            <!-- Character Equipment slots & Stats block -->
+            <div id="inventory-equipment-panel">
+              <h3 class="panel-section-title">Equipment</h3>
+              <div class="equipment-slots-list">
+                <div class="equip-slot-box" id="equip-slot-weapon" data-slot="weapon">
+                  <span class="slot-label">Weapon</span>
+                  <div class="equip-slot-item" id="equip-item-weapon">Empty</div>
+                </div>
+                <div class="equip-slot-box" id="equip-slot-armor" data-slot="armor">
+                  <span class="slot-label">Armor</span>
+                  <div class="equip-slot-item" id="equip-item-armor">Empty</div>
+                </div>
+                <div class="equip-slot-box" id="equip-slot-accessory" data-slot="accessory">
+                  <span class="slot-label">Accessory</span>
+                  <div class="equip-slot-item" id="equip-item-accessory">Empty</div>
+                </div>
+              </div>
+              <h3 class="panel-section-title" style="margin-top: 14px;">Stats</h3>
+              <div class="stats-list">
+                <div class="stat-line">HP: <span id="stat-val-hp">80 / 100</span></div>
+                <div class="stat-line">Attack: <span id="stat-val-atk">10</span></div>
+                <div class="stat-line">Defense: <span id="stat-val-def">5</span></div>
+              </div>
+            </div>
+
+            <div id="inventory-details">
+              <p class="empty-inventory-msg">Select an item to see details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decoupled Trade Dialogue Choice Prompt Overlay -->
+      <div id="choice-overlay" class="choice-hidden">
+        <div id="choice-box">
+          <p id="choice-message">Would you like to trade with this merchant?</p>
+          <div id="choice-actions">
+            <button id="choice-trade-btn" class="choice-btn">Trade</button>
+            <button id="choice-exit-btn" class="choice-btn exit-btn">Exit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shop Menu Overlay -->
+      <div id="shop-overlay" class="shop-hidden">
+        <div id="shop-box">
+          <div id="shop-header">
+            <h2 id="shop-title">Village Shop</h2>
+            <button id="shop-close-btn">&times;</button>
+          </div>
+          <div id="shop-content">
+            <div class="shop-column" id="shop-buy-pane">
+              <h3 class="shop-pane-title">Items For Sale</h3>
+              <div id="shop-buy-grid" class="shop-grid">
+                <!-- Shop stock items injected dynamically -->
+              </div>
+            </div>
+            <div class="shop-column" id="shop-sell-pane">
+              <h3 class="shop-pane-title">Your Inventory</h3>
+              <div id="shop-sell-grid" class="shop-grid">
+                <!-- Player items injected dynamically -->
+              </div>
+            </div>
+            <div class="shop-column" id="shop-details-pane">
+              <div id="shop-details">
+                <p class="empty-shop-msg">Select an item to trade</p>
+              </div>
+            </div>
+          </div>
+          <div id="shop-footer">
+            <div id="shop-gold-bar">
+              <span class="gold-label">Your Gold:</span>
+              <span id="shop-gold-amount">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

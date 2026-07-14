@@ -1,0 +1,82 @@
+export const itemsData = {
+  iron_ore: {
+    id: "iron_ore",
+    name: "Mountain Iron Ore",
+    description: "High-grade raw iron ore gathered from mountain veins. Essential material for blacksmith forging.",
+    category: "materials",
+    iconKey: "item_iron_ore",
+    stackable: true,
+    maxStack: 99,
+    value: 15,
+    rarity: "common",
+    consumable: false
+  },
+  rice: {
+    id: "rice",
+    name: "Golden Rice Bag",
+    description: "A bag of nutrient-rich golden rice harvested from Capital Village farms. Restores 20 HP.",
+    category: "food",
+    iconKey: "item_rice",
+    stackable: true,
+    maxStack: 99,
+    value: 5,
+    rarity: "common",
+    consumable: true,
+    effects: { hp: 20 }
+  },
+  potion: {
+    id: "potion",
+    name: "Healing Elixir",
+    description: "A vial of glowing red elixir. Restores 50 HP upon consumption.",
+    category: "potions",
+    iconKey: "item_potion",
+    stackable: true,
+    maxStack: 99,
+    value: 30,
+    rarity: "common",
+    consumable: true,
+    effects: { hp: 50 }
+  },
+  katana: {
+    id: "katana",
+    name: "Rebel Katana",
+    description: "A finely crafted samurai sword forged from tempered steel. Ready to slash Khan's invaders.",
+    category: "weapons",
+    iconKey: "item_katana",
+    stackable: false,
+    maxStack: 1,
+    value: 200,
+    rarity: "rare",
+    consumable: false,
+    equipSlot: "weapon",
+    stats: { hp: 0, atk: 15, def: 0 }
+  },
+  ashigaru_armor: {
+    id: "ashigaru_armor",
+    name: "Ashigaru Armor",
+    description: "Light iron plates worn by defense guards. Provides steady protection.",
+    category: "armor",
+    iconKey: "item_armor",
+    stackable: false,
+    maxStack: 1,
+    value: 120,
+    rarity: "common",
+    consumable: false,
+    equipSlot: "armor",
+    stats: { hp: 20, atk: 0, def: 8 }
+  },
+  lucky_charm: {
+    id: "lucky_charm",
+    name: "Omamori Charm",
+    description: "A blessed temple talisman of safety and spiritual focus.",
+    category: "accessories",
+    iconKey: "item_accessory",
+    stackable: false,
+    maxStack: 1,
+    value: 80,
+    rarity: "rare",
+    consumable: false,
+    equipSlot: "accessory",
+    stats: { hp: 10, atk: 2, def: 2 }
+  }
+};
