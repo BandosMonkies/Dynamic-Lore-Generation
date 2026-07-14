@@ -1,5 +1,33 @@
 // Configuration data for reusable building interiors
 export const interiorsConfig = {
+
+  // Village 1 — Temple / Pagoda building
+  BuildingScene: {
+    name: "Village Temple",
+    bgKey: "build_bg",
+    collisionKey: "build_collision",
+    parentVillage: "Village1Scene",
+    entranceTrigger: {
+      x: 530,
+      y: 245,
+      radius: 50
+    },
+    spawnInside: {
+      x: 752,
+      y: 820
+    },
+    spawnOutside: {
+      x: 530,
+      y: 275
+    },
+    exitTrigger: {
+      x: 752,
+      y: 870,
+      radius: 60
+    }
+  },
+
+  // Village 3 — Archery Barracks
   ArcheryBarracksScene: {
     name: "Archery Barracks",
     bgKey: "barracks_bg",
@@ -8,11 +36,11 @@ export const interiorsConfig = {
     entranceTrigger: {
       x: 820,
       y: 220,
-      radius: 40
+      radius: 45
     },
     spawnInside: {
       x: 512,
-      y: 720
+      y: 670
     },
     spawnOutside: {
       x: 820,
@@ -20,8 +48,9 @@ export const interiorsConfig = {
     },
     exitTrigger: {
       x: 512,
-      y: 770,
-      radius: 40
+      y: 700,
+      radius: 55
     }
   }
+
 };
