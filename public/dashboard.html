@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NPC State Dashboard — Dynamic Lore Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan:    #66fcf1;
+      --cyan-dim: rgba(102,252,241,0.15);
+      --cyan-border: rgba(102,252,241,0.25);
+      --bg:      #0b0c10;
+      --surface: #0e1117;
+      --card:    #13181f;
+      --card2:   #181e27;
+      --text:    #c5c6c7;
+      --text-dim:#6c7480;
+      --accent:  #45a29e;
+      --red:     #e74c3c;
+      --gold:    #f1c40f;
+      --green:   #2ecc71;
+      --purple:  #9b59b6;
+      --orange:  #e67e22;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────── */
+    .app {
+      display: grid;
+      grid-template-rows: 56px 1fr;
+      grid-template-columns: 220px 1fr 300px;
+      height: 100vh;
+    }
+
+    /* ── Top Bar ───────────────────────────────────────────────────── */
+    .topbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--cyan-border);
+    }
+
+    .topbar-logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .topbar-logo span { color: var(--text-dim); font-weight: 400; }
+
+    .topbar-divider { width: 1px; height: 28px; background: var(--cyan-border); }
+
+    .world-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+    }
+    .world-stat-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    .world-stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--cyan);
+      font-weight: 500;
+    }
+
+    .topbar-spacer { flex: 1; }
+
+    .connection-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid;
+      transition: all 0.3s ease;
+    }
+    .connection-badge.live   { border-color: var(--green); color: var(--green); background: rgba(46,204,113,0.08); }
+    .connection-badge.offline{ border-color: var(--red);   color: var(--red);   background: rgba(231,76,60,0.08);  }
+    .connection-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    .live   .connection-dot { background: var(--green); }
+    .offline .connection-dot { background: var(--red); animation: none; }
+
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.4; transform:scale(0.7); }
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────────────── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--cyan-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-section-title {
+      padding: 14px 16px 8px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .village-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      width: 100%;
+      text-align: left;
+      transition: all 0.15s ease;
+      border-left: 2px solid transparent;
+    }
+    .village-btn:hover { background: var(--cyan-dim); }
+    .village-btn.active {
+      background: var(--cyan-dim);
+      border-left-color: var(--cyan);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .village-btn-icon { font-size: 16px; }
+    .village-npc-count {
+      margin-left: auto;
+      background: var(--card2);
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+    .village-btn.active .village-npc-count {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px 16px;
+      border-top: 1px solid var(--cyan-border);
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Main Panel ────────────────────────────────────────────────── */
+    .main-panel {
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .main-panel::-webkit-scrollbar { width: 5px; }
+    .main-panel::-webkit-scrollbar-track { background: var(--surface); }
+    .main-panel::-webkit-scrollbar-thumb { background: var(--cyan-border); border-radius: 3px; }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    /* ── NPC Card ──────────────────────────────────────────────────── */
+    .npc-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 16px 18px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .npc-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .npc-card:hover { border-color: var(--cyan-border); box-shadow: 0 0 18px rgba(102,252,241,0.06); }
+    .npc-card:hover::before { opacity: 1; }
+
+    .npc-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .npc-identity { flex: 1; }
+
+    .npc-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e5e6e7;
+      line-height: 1.2;
+    }
+    .npc-role {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .npc-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    /* Emotion badge colors */
+    .badge-emotion { border-color: var(--purple); color: var(--purple); background: rgba(155,89,182,0.1); }
+    .badge-action  { border-color: var(--accent); color: var(--accent); background: rgba(69,162,158,0.1); }
+    .badge-sleeping{ border-color: var(--text-dim); color: var(--text-dim); background: rgba(108,116,128,0.1); }
+    .badge-hidden  { border-color: var(--red); color: var(--red); background: rgba(231,76,60,0.08); }
+    .badge-visible { border-color: var(--green); color: var(--green); background: rgba(46,204,113,0.08); }
+
+    /* ── NPC Details Grid ──────────────────────────────────────────── */
+    .npc-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .detail-block {
+      background: var(--card2);
+      border-radius: 7px;
+      padding: 10px 12px;
+    }
+    .detail-block.full { grid-column: 1 / -1; }
+
+    .detail-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .detail-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    /* Relationship table */
+    .rel-table { width: 100%; border-collapse: collapse; }
+    .rel-table td { padding: 3px 0; font-size: 11px; }
+    .rel-name  { color: var(--text); }
+    .rel-status{ color: var(--text-dim); padding: 0 8px; }
+    .rel-bar   { min-width: 60px; }
+
+    .bond-bar-bg {
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      height: 5px;
+      overflow: hidden;
+    }
+    .bond-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--cyan));
+      transition: width 0.4s ease;
+    }
+
+    /* Memory log */
+    .memory-empty {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-style: italic;
+      padding: 4px 0;
+    }
+    .memory-entry {
+      font-size: 11px;
+      color: var(--text);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      line-height: 1.4;
+    }
+    .memory-entry:last-child { border-bottom: none; }
+
+    /* Position */
+    .pos-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--cyan);
+    }
+
+    /* ── Empty State ───────────────────────────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 48px 20px;
+      color: var(--text-dim);
+    }
+    .empty-state-icon { font-size: 36px; }
+    .empty-state-text { font-size: 13px; }
+
+    /* ── Right Panel: Quest Tracker ────────────────────────────────── */
+    .right-panel {
+      background: var(--surface);
+      border-left: 1px solid var(--cyan-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .right-panel-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--cyan-border);
+    }
+    .right-panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .right-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .right-panel-body::-webkit-scrollbar { width: 4px; }
+    .right-panel-body::-webkit-scrollbar-thumb { background: var(--cyan-border); border-radius: 2px; }
+
+    .quest-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+    .quest-placeholder-icon { font-size: 32px; opacity: 0.5; }
+    .quest-placeholder-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .quest-placeholder-sub   { font-size: 11px; line-height: 1.5; }
+
+    /* ── Player Stats Block ────────────────────────────────────────── */
+    .player-block {
+      padding: 16px;
+      border-top: 1px solid var(--cyan-border);
+    }
+    .player-block-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .player-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+      font-size: 12px;
+    }
+    .player-stat-key   { color: var(--text-dim); }
+    .player-stat-val   { font-family: 'JetBrains Mono', monospace; color: var(--cyan); }
+    .hp-bar-bg {
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      height: 4px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    .hp-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--red), var(--gold));
+      transition: width 0.5s ease;
+    }
+
+    /* ── Last Updated ──────────────────────────────────────────────── */
+    .last-updated {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      padding: 10px 16px;
+      border-top: 1px solid var(--cyan-border);
+      text-align: center;
+    }
+
+    /* ── Scanline subtle overlay ───────────────────────────────────── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Top Bar ───────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-logo">⛩ Dynamic Lore <span>/ NPC Dashboard</span></div>
+    <div class="topbar-divider"></div>
+
+    <div class="world-stat">
+      <div class="world-stat-label">Day</div>
+      <div class="world-stat-value" id="hud-day">—</div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Time</div>
+      <div class="world-stat-value" id="hud-time">—</div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Phase</div>
+      <div class="world-stat-value" id="hud-phase">—</div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Weather</div>
+      <div class="world-stat-value" id="hud-weather">—</div>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="connection-badge offline" id="connection-badge">
+      <div class="connection-dot"></div>
+      <span id="connection-text">Waiting for game…</span>
+    </div>
+  </header>
+
+  <!-- ── Sidebar: Village Nav ─────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-section-title">Villages</div>
+
+    <button class="village-btn active" onclick="selectVillage('all')" id="btn-all">
+      <span class="village-btn-icon">🌍</span>
+      <span>All NPCs</span>
+      <span class="village-npc-count" id="count-all">0</span>
+    </button>
+    <button class="village-btn" onclick="selectVillage('Village1Scene')" id="btn-Village1Scene">
+      <span class="village-btn-icon">🏯</span>
+      <span>Capital Village</span>
+      <span class="village-npc-count" id="count-Village1Scene">0</span>
+    </button>
+    <button class="village-btn" onclick="selectVillage('Village2Scene')" id="btn-Village2Scene">
+      <span class="village-btn-icon">⚒️</span>
+      <span>Craftsmen Village</span>
+      <span class="village-npc-count" id="count-Village2Scene">0</span>
+    </button>
+    <button class="village-btn" onclick="selectVillage('Village3Scene')" id="btn-Village3Scene">
+      <span class="village-btn-icon">⚔️</span>
+      <span>Military Village</span>
+      <span class="village-npc-count" id="count-Village3Scene">0</span>
+    </button>
+    <button class="village-btn" onclick="selectVillage('ArcheryBarracksScene')" id="btn-ArcheryBarracksScene">
+      <span class="village-btn-icon">🏹</span>
+      <span>Archery Barracks</span>
+      <span class="village-npc-count" id="count-ArcheryBarracksScene">0</span>
+    </button>
+
+    <div class="sidebar-footer" id="sidebar-footer">No game data yet</div>
+  </aside>
+
+  <!-- ── Main Panel: NPC Cards ────────────────────────────────────── -->
+  <main class="main-panel" id="npc-panel">
+    <div class="empty-state">
+      <div class="empty-state-icon">🎮</div>
+      <div class="empty-state-text">Open the game in another tab to see live NPC data</div>
+    </div>
+  </main>
+
+  <!-- ── Right Panel: Quests + Player ─────────────────────────────── -->
+  <aside class="right-panel">
+    <div class="right-panel-header">
+      <div class="right-panel-title">📜 Quest Tracker</div>
+    </div>
+    <div class="right-panel-body" id="quest-panel">
+      <div class="quest-placeholder">
+        <div class="quest-placeholder-icon">📋</div>
+        <div class="quest-placeholder-title">No Quests Yet</div>
+        <div class="quest-placeholder-sub">Quests will appear here when they are designed and added to the game.</div>
+      </div>
+    </div>
+
+    <!-- Player Stats -->
+    <div class="player-block">
+      <div class="player-block-title">Player — Jin Taira</div>
+      <div class="player-stat-row">
+        <span class="player-stat-key">HP</span>
+        <span class="player-stat-val" id="stat-hp">—</span>
+      </div>
+      <div class="hp-bar-bg"><div class="hp-bar-fill" id="hp-bar" style="width:100%"></div></div>
+      <div class="player-stat-row" style="margin-top:6px">
+        <span class="player-stat-key">ATK</span>
+        <span class="player-stat-val" id="stat-atk">—</span>
+      </div>
+      <div class="player-stat-row">
+        <span class="player-stat-key">DEF</span>
+        <span class="player-stat-val" id="stat-def">—</span>
+      </div>
+      <div class="player-stat-row">
+        <span class="player-stat-key">Gold</span>
+        <span class="player-stat-val" id="stat-gold">—</span>
+      </div>
+    </div>
+
+    <div class="last-updated" id="last-updated">—</div>
+  </aside>
+
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+
+let gameState   = null;
+let lastUpdate  = null;
+let selectedVillage = 'all';
+const WEATHER_ICONS = { clear:'☀️', cloudy:'☁️', rain:'🌧️' };
+const EMOTION_ICONS = {
+  neutral:'😐', wary:'👀', happy:'😊', angry:'😠', sad:'😢',
+  excited:'⚡', fearful:'😨', stern:'😤', serene:'🧘', focused:'🎯',
+  nervous:'😰', grim:'💀', bored:'😑', tired:'😴',
+};
+
+// ── BroadcastChannel ──────────────────────────────────────────────────────────
+
+const channel = new BroadcastChannel('rpg_state');
+channel.addEventListener('message', event => {
+  handleStateUpdate(event.data);
+});
+
+// ── Load from localStorage on open ────────────────────────────────────────────
+
+(function loadInitialState() {
+  try {
+    const stored = localStorage.getItem('rpg_live_state');
+    if (stored) {
+      handleStateUpdate(JSON.parse(stored));
+    }
+  } catch (e) {
+    console.warn('[Dashboard] Could not read initial state:', e);
+  }
+})();
+
+// ── Disconnection detection: if no update in 6s, mark offline ────────────────
+
+setInterval(() => {
+  if (lastUpdate && Date.now() - lastUpdate > 6000) {
+    setConnection(false);
+  }
+}, 3000);
+
+// ── State Handler ─────────────────────────────────────────────────────────────
+
+function handleStateUpdate(state) {
+  gameState  = state;
+  lastUpdate = Date.now();
+  setConnection(true);
+  render(state);
+}
+
+function setConnection(live) {
+  const badge = document.getElementById('connection-badge');
+  const text  = document.getElementById('connection-text');
+  badge.className = 'connection-badge ' + (live ? 'live' : 'offline');
+  text.textContent = live ? 'Live' : 'Disconnected';
+}
+
+// ── Village Selection ─────────────────────────────────────────────────────────
+
+function selectVillage(village) {
+  selectedVillage = village;
+  document.querySelectorAll('.village-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + village);
+  if (btn) btn.classList.add('active');
+  if (gameState) render(gameState);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function render(state) {
+  renderTopBar(state.world, state.player);
+  renderNPCCounts(state.npcs);
+  renderNPCPanel(state.npcs);
+  renderPlayerStats(state.player);
+  renderQuests(state.quests);
+  renderLastUpdated(state.timestamp);
+}
+
+function renderTopBar(world, player) {
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('hud-day').textContent    = world.day;
+  document.getElementById('hud-time').textContent   = `${pad(world.hour)}:${pad(world.minute)}`;
+  document.getElementById('hud-phase').textContent  = world.phase.toUpperCase();
+  document.getElementById('hud-weather').textContent = `${WEATHER_ICONS[world.weather] || '🌤'} ${world.weather.toUpperCase()}`;
+}
+
+function renderNPCCounts(npcs) {
+  const villages = ['Village1Scene','Village2Scene','Village3Scene','ArcheryBarracksScene'];
+  const allCount = npcs.filter(n => n.isVisible).length;
+  document.getElementById('count-all').textContent = npcs.length;
+  villages.forEach(v => {
+    const el = document.getElementById('count-' + v);
+    if (el) el.textContent = npcs.filter(n => n.village === v).length;
+  });
+  // Sidebar footer
+  document.getElementById('sidebar-footer').textContent =
+    `${npcs.length} NPCs · ${allCount} active`;
+}
+
+function renderNPCPanel(npcs) {
+  const panel = document.getElementById('npc-panel');
+  const filtered = selectedVillage === 'all'
+    ? npcs
+    : npcs.filter(n => n.village === selectedVillage);
+
+  if (filtered.length === 0) {
+    panel.innerHTML = `
+      <div class="panel-title">${selectedVillage === 'all' ? 'All NPCs' : villageLabel(selectedVillage)}</div>
+      <div class="empty-state">
+        <div class="empty-state-icon">👤</div>
+        <div class="empty-state-text">No NPCs active in this location right now</div>
+      </div>`;
+    return;
+  }
+
+  const villageName = selectedVillage === 'all' ? 'All NPCs' : villageLabel(selectedVillage);
+  panel.innerHTML = `<div class="panel-title">${villageName} — ${filtered.length} NPC${filtered.length!==1?'s':''}</div>`
+    + filtered.map(npc => renderNPCCard(npc)).join('');
+}
+
+function renderNPCCard(npc) {
+  const emotionIcon = EMOTION_ICONS[npc.emotion] || '❓';
+  const sleepBadge  = npc.isSleeping
+    ? `<div class="badge badge-sleeping">😴 Sleeping</div>` : '';
+  const visBadge    = npc.isVisible
+    ? `<div class="badge badge-visible">● Visible</div>`
+    : `<div class="badge badge-hidden">● Hidden</div>`;
+
+  // Relationships
+  let relHTML = '';
+  if (npc.relationships && npc.relationships.length > 0) {
+    relHTML = `<table class="rel-table">` +
+      npc.relationships.map(r => {
+        const pct = Math.round(Math.max(0, Math.min(100, r.value)));
+        return `<tr>
+          <td class="rel-name">${r.character}</td>
+          <td class="rel-status">${r.status}</td>
+          <td class="rel-bar">
+            <div class="bond-bar-bg"><div class="bond-bar-fill" style="width:${pct}%"></div></div>
+          </td>
+          <td style="font-family:monospace;font-size:10px;padding-left:6px;color:var(--cyan)">${pct}</td>
+        </tr>`;
+      }).join('') + `</table>`;
+  } else {
+    relHTML = `<div class="memory-empty">No tracked relationships</div>`;
+  }
+
+  // Memory log
+  const memHTML = (npc.memoryLog && npc.memoryLog.length > 0)
+    ? npc.memoryLog.map(m => `<div class="memory-entry">${m}</div>`).join('')
+    : `<div class="memory-empty">Memory system not yet active — log will populate here</div>`;
+
+  return `
+  <div class="npc-card">
+    <div class="npc-card-header">
+      <div class="npc-identity">
+        <div class="npc-name">${npc.name}</div>
+        <div class="npc-role">${npc.role} · ${villageLabel(npc.village)}</div>
+      </div>
+      <div class="npc-badges">
+        <div class="badge badge-emotion">${emotionIcon} ${npc.emotion}</div>
+        <div class="badge badge-action">⚡ ${npc.action}</div>
+        ${sleepBadge}
+        ${visBadge}
+      </div>
+    </div>
+
+    <div class="npc-details-grid">
+      <div class="detail-block">
+        <div class="detail-label">Position</div>
+        <div class="pos-text">(${npc.x}, ${npc.y})</div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">Move State</div>
+        <div class="detail-value">${npc.movementState}</div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">Reputation</div>
+        <div class="detail-value">${npc.reputation ?? 0}</div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">Personality</div>
+        <div class="detail-value" style="font-family:Outfit;font-size:11px;line-height:1.4">${npc.personality || '—'}</div>
+      </div>
+      <div class="detail-block full">
+        <div class="detail-label">Relationships</div>
+        ${relHTML}
+      </div>
+      <div class="detail-block full">
+        <div class="detail-label">🧠 Memory Log</div>
+        ${memHTML}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPlayerStats(player) {
+  if (!player) return;
+  const hpPct = Math.round((player.hp / player.maxHp) * 100);
+  document.getElementById('stat-hp').textContent   = `${player.hp} / ${player.maxHp}`;
+  document.getElementById('stat-atk').textContent  = player.atk;
+  document.getElementById('stat-def').textContent  = player.def;
+  document.getElementById('stat-gold').textContent = player.gold + ' 🪙';
+  document.getElementById('hp-bar').style.width    = hpPct + '%';
+}
+
+function renderQuests(quests) {
+  const panel = document.getElementById('quest-panel');
+  if (!quests || quests.length === 0) {
+    panel.innerHTML = `
+      <div class="quest-placeholder">
+        <div class="quest-placeholder-icon">📋</div>
+        <div class="quest-placeholder-title">No Quests Yet</div>
+        <div class="quest-placeholder-sub">Quests will appear here when they are designed and added to the game.</div>
+      </div>`;
+    return;
+  }
+  // Future: render quest list here
+  panel.innerHTML = quests.map(q => `
+    <div style="padding:10px;background:var(--card);border-radius:7px;margin-bottom:8px;">
+      <div style="font-weight:600;font-size:13px">${q.title}</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:3px">${q.status} · ${q.progress}/${q.targetCount}</div>
+    </div>`).join('');
+}
+
+function renderLastUpdated(ts) {
+  const d = new Date(ts);
+  const t = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('last-updated').textContent = `Last update: ${t}`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function villageLabel(key) {
+  return {
+    Village1Scene:         'Capital Village',
+    Village2Scene:         'Craftsmen Village',
+    Village3Scene:         'Military Village',
+    ArcheryBarracksScene:  'Archery Barracks',
+  }[key] || key;
+}
+</script>
+</body>
+</html>

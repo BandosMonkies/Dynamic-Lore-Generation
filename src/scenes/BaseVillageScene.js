@@ -18,6 +18,7 @@ import ScheduleManager from '../managers/ScheduleManager.js';
 import SaveManager from '../managers/SaveManager.js';
 import { interiorsConfig } from '../data/interiors.js';
 import NPCAIManager from '../managers/NPCAIManager.js';
+import GameStateManager from '../managers/GameStateManager.js';
 
 export default class BaseVillageScene extends Phaser.Scene {
   constructor(sceneKey, bgKey, collisionKey) {
@@ -149,6 +150,11 @@ export default class BaseVillageScene extends Phaser.Scene {
     // NPC AI Manager registration (persists globally on game instance)
     if (!this.game.npcAIManager) {
       this.game.npcAIManager = new NPCAIManager(this.game);
+    }
+
+    // Game State Manager — broadcasts live state to the developer dashboard
+    if (!this.game.gameStateManager) {
+      this.game.gameStateManager = new GameStateManager(this.game);
     }
 
     // Combat Manager registration

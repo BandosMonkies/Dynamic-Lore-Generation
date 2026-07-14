@@ -112,13 +112,9 @@ export default class QuestManager {
     this.showNotification("Quest Completed", `${quest.title}`);
     
     // Check if this quest recruits a hero for our Clan System
-    const heroMapping = {
-      "quest_yoshi": { id: "hero_yoshi", name: "Yoshi" },
-      "quest_daiki": { id: "hero_daiki", name: "Monk Daiki" },
-      "quest_nobu": { id: "hero_nobu", name: "Nobu" },
-      "quest_gwansik": { id: "hero_gwansik", name: "Gwan Sik" },
-      "quest_yuka": { id: "hero_yuka", name: "Lady Yuka" }
-    };
+    // (No quests currently configured — heroMapping will populate when quests are added)
+    const heroMapping = {};
+
 
     if (heroMapping[questId] && this.game.clanManager) {
       const hero = heroMapping[questId];
