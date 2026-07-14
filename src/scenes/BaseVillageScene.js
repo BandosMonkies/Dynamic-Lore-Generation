@@ -291,15 +291,25 @@ export default class BaseVillageScene extends Phaser.Scene {
       const isChoiceActive = this.choiceOverlay && this.choiceOverlay.classList.contains('choice-visible');
       const isShopActive = this.game.shopManager && this.game.shopManager.isShopActive;
 
+      // Helper to run critical visual updates while menus are open
+      const runMenuUpdates = () => {
+        this.player.update(time, delta);
+        if (this.npcs) {
+          this.npcs.getChildren().forEach(npc => {
+            if (npc.updateMovement) npc.updateMovement(delta, this);
+          });
+        }
+      };
+
       // If choice prompt or shop is open, freeze inputs
       if (isChoiceActive || isShopActive) {
-        this.player.update(time, delta);
+        runMenuUpdates();
         return;
       }
 
       // If quest log is open, block updates but still run player to update animations
       if (this.game.questManager && this.game.questManager.isLogActive) {
-        this.player.update(time, delta);
+        runMenuUpdates();
         return;
       }
 
@@ -311,7 +321,7 @@ export default class BaseVillageScene extends Phaser.Scene {
 
       // If inventory is open, block updates but still run player to update animations
       if (this.game.inventoryManager && this.game.inventoryManager.isInventoryActive) {
-        this.player.update(time, delta);
+        runMenuUpdates();
         return;
       }
 
@@ -320,7 +330,7 @@ export default class BaseVillageScene extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.keySpace) || Phaser.Input.Keyboard.JustDown(this.keyEnter)) {
           this.dialogueManager.advanceDialogue();
         }
-        this.player.update(time, delta);
+        runMenuUpdates();
         return;
       }
 
@@ -346,6 +356,15 @@ export default class BaseVillageScene extends Phaser.Scene {
       }
       this.checkTransitions();
       this.updateNPCProximity();
+      
+      // Update NPC patrol movements
+      if (this.npcs) {
+        this.npcs.getChildren().forEach(npc => {
+          if (npc.updateMovement) {
+            npc.updateMovement(delta, this);
+          }
+        });
+      }
 
       // Dynamic Y-sorting for 2D depth (excluding the UI Prompts fixed at depth 1000)
       this.children.each(child => {

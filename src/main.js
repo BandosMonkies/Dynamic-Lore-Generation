@@ -4,6 +4,7 @@ import Village1Scene from './scenes/Village1Scene.js';
 import Village2Scene from './scenes/Village2Scene.js';
 import Village3Scene from './scenes/Village3Scene.js';
 import ArcheryBarracksScene from './scenes/ArcheryBarracksScene.js';
+import BuildingScene from './scenes/BuildingScene.js';
 //saketh
 const config = {
   type: Phaser.AUTO,
@@ -22,7 +23,7 @@ const config = {
       debug: false
     }
   },
-  scene: [BootScene, Village1Scene, Village2Scene, Village3Scene, ArcheryBarracksScene]
+  scene: [BootScene, Village1Scene, Village2Scene, Village3Scene, ArcheryBarracksScene, BuildingScene]
 };
 
 const game = new Phaser.Game(config);

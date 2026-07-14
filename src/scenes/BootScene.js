@@ -37,12 +37,34 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('village2_bg', 'assets/images/village2_bg.jpg');
     this.load.image('village3_bg', 'assets/images/village3_bg.jpg');
     this.load.image('barracks_bg', 'assets/images/barracks_bg.jpg');
+    this.load.image('build_bg', 'assets/images/build.png');
 
     // Load Village Collision Masks
     this.load.image('village1_collision', 'assets/images/village1_collision.png');
     this.load.image('village2_collision', 'assets/images/village2_collision.png');
     this.load.image('village3_collision', 'assets/images/village3_collision.png');
     this.load.image('barracks_collision', 'assets/images/barracks_collision.png');
+    this.load.image('build_collision', 'assets/images/build_collision.png');
+
+    // No animations for Gwan Sik and Yuka since they are static standing images now
+
+    // Load Gwan Sik (Archery Teacher)
+    this.load.image('gwansik', 'assets/images/gwansik_stand.png');
+
+    // Load Lady Yuka
+    this.load.image('yuka', 'assets/images/yuka_stand.png');
+
+    // Load Generic Villager
+    this.load.image('villager', 'assets/images/villager_stand.png');
+
+    // Load Yoshi
+    this.load.image('yoshi', 'assets/images/yoshi_stand.png');
+
+    // Load Monk Daiki
+    this.load.image('monk', 'assets/images/monk_stand.png');
+
+    // Load Nobu Blacksmith
+    this.load.image('nobu', 'assets/images/nobu_stand.png');
 
     // Load Samurai spritesheet as single image to slice manually
     this.load.image('samurai', 'assets/images/samurai.png');
@@ -229,6 +251,8 @@ export default class BootScene extends Phaser.Scene {
       frameRate: 8,
       repeat: -1
     });
+
+    // (Gwan Sik and Lady Yuka now use single static standing images without any animations)
 
     // Start Village 1
     this.scene.start('Village1Scene', { spawnX: 512, spawnY: 350 });
