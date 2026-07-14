@@ -41,7 +41,6 @@ export default class DialogueManager {
     }
 
     if (!pages || pages.length === 0) {
-      console.warn(`[Dialogue] Dialogue ID "${dialogueId}" not found in dialogues.js.`);
       if (onComplete) onComplete();
       return;
     }
@@ -208,9 +207,9 @@ export default class DialogueManager {
       npc.currentAction = aiResponse.action;
     }
 
-    // Log the NPC's thoughts for future memory system integration
+    // Store thoughts on the NPC for potential future memory system integration
     if (aiResponse.thoughts) {
-      console.log(`[NPCAIManager] 💭 ${npc?.name} thinks: "${aiResponse.thoughts}"`);
+      npc._lastThought = aiResponse.thoughts;
     }
 
     // Wrap dialogue text as a single page array (compatible with existing system)

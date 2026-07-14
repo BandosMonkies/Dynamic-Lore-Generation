@@ -236,12 +236,6 @@ export default class ScheduleManager {
               npc.movementState = 'Waiting';
               npc.waitingTimer = 1.5;
             }
-
-            // Throttled debug logging
-            if (this.logCounter % 60 === 0) {
-              const nextWp = npc.pathQueue[0] ? `(${npc.pathQueue[0].x}, ${npc.pathQueue[0].y})` : 'None';
-              console.log(`[NPC_MOVE_DEBUG] Name: ${npc.id} | State: ${npc.movementState} | Current Waypoint: (${npc.currentPathTarget.x.toFixed(1)}, ${npc.currentPathTarget.y.toFixed(1)}) | Next Waypoint: ${nextWp} | Dist: ${dist.toFixed(1)} | Blocked: ${!moved} | Waiting Time: ${npc.waitingTimer.toFixed(1)}s | Destination Reached: false`);
-            }
           } else {
             // Reached current target node/waypoint
             if (npc.pathQueue.length > 0) {
@@ -262,12 +256,6 @@ export default class ScheduleManager {
             npc.movementState = 'Walking';
             npc.waitingTimer = 0;
           }
-
-          // Throttled debug logging
-          if (this.logCounter % 60 === 0) {
-            const nextWp = npc.pathQueue[0] ? `(${npc.pathQueue[0].x}, ${npc.pathQueue[0].y})` : 'None';
-            console.log(`[NPC_MOVE_DEBUG] Name: ${npc.id} | State: ${npc.movementState} | Current Waypoint: (${npc.currentPathTarget.x.toFixed(1)}, ${npc.currentPathTarget.y.toFixed(1)}) | Next Waypoint: ${nextWp} | Dist: ${dist.toFixed(1)} | Blocked: true | Waiting Time: ${npc.waitingTimer.toFixed(1)}s | Destination Reached: false`);
-          }
         } else if (npc.movementState === 'DestinationReached') {
           // Complete route: transition to scheduled activity after physically reaching final destination
           npc.x = npc.currentPathTarget.finalX;
@@ -281,21 +269,8 @@ export default class ScheduleManager {
           }
           npc.currentPathTarget = null;
           npc.movementState = 'Idle';
-
-          // Debug log destination reached
-          console.log(`[NPC_MOVE_DEBUG] Name: ${npc.id} | State: ${npc.movementState} | Destination Reached: true`);
         }
       } else if (npc.active && npc.visible) {
-        // Idle/Sleeping diagnostics
-        const hour = this.game.worldManager ? this.game.worldManager.hour : 8;
-        const min = this.game.worldManager ? this.game.worldManager.minute : 0;
-        const schedule = npcSchedules[npc.id];
-        const activeEntry = getActiveScheduleEntry(schedule, hour);
-        if (activeEntry && this.logCounter % 180 === 0) {
-          const finalT = activeEntry.targetLocation;
-          const distToFinal = Phaser.Math.Distance.Between(npc.x, npc.y, finalT.x, finalT.y);
-          console.log(`[NPC_MOVE_DEBUG] Name: ${npc.id} | State: ${npc.movementState} | Pos: (${npc.x.toFixed(1)}, ${npc.y.toFixed(1)}) | Target: (${finalT.x}, ${finalT.y}) | Active Action: ${npc.currentAction} | Sleeping: ${npc.isSleeping} | Dist to final: ${distToFinal.toFixed(1)} | Destination Reached: true`);
-        }
       }
     });
   }

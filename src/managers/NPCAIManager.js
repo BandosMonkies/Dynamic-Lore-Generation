@@ -55,14 +55,12 @@ export default class NPCAIManager {
       // Do a fresh check — server might have come online since last attempt
       const alive = await this._checkHealth();
       if (!alive) {
-        console.warn('[NPCAIManager] Server offline — using static dialogue fallback.');
         return null;
       }
     }
 
     try {
       const payload = this._buildPayload(npc, scene);
-      console.log('[NPCAIManager] Sending inference request for NPC:', npc.id, payload);
 
       const response = await this._fetchWithTimeout(
         `${this.serverURL}/npc/infer`,
@@ -75,18 +73,14 @@ export default class NPCAIManager {
       );
 
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}));
-        console.error('[NPCAIManager] Server returned error:', response.status, errBody);
+        await response.json().catch(() => ({}));
         return null;
       }
 
       const data = await response.json();
-      console.log(`[NPCAIManager] ✅ Response received in ${data.inference_time}s:`, data.response);
-
       return data.response || null;
 
     } catch (err) {
-      console.error('[NPCAIManager] Request failed:', err.message);
       this.isOnline = false;
       return null;
     }
@@ -109,7 +103,6 @@ export default class NPCAIManager {
     } catch {
       this.isOnline = false;
     }
-    console.log(`[NPCAIManager] Server status: ${this.isOnline ? '🟢 online' : '🔴 offline'}`);
     return this.isOnline;
   }
 
@@ -177,9 +170,11 @@ export default class NPCAIManager {
       is_sleeping: npc.isSleeping || false,
     };
 
-    // ── Memory log: placeholder for future memory system ──────────────────
-    // This is where the memory management system will inject its data later.
-    const memoryLog = '';
+    // ── Memory log: live NPC memories from the MemoryManager ─────────────
+    const memoryManager = this.game.memoryManager;
+    const memoryLog = memoryManager
+      ? memoryManager.getFormattedMemoryLog(npc)
+      : '';
 
     // ── Trigger event: describe what the player did ────────────────────────
     const triggerEvent = `${playerInfo.name} approached and initiated conversation with ${npc.name}.`;

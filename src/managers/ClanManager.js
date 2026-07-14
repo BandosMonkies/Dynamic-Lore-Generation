@@ -46,8 +46,7 @@ export default class ClanManager {
   showNotification(title, message) {
     if (this.game.questManager) {
       this.game.questManager.showNotification(title, message);
-    } else {
-      console.log(`[Clan Manager] ${title}: ${message}`);
     }
+    // Silent fallback when questManager not ready
   }
 }

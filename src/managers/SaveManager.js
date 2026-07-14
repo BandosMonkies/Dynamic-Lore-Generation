@@ -47,8 +47,7 @@ export default class SaveManager {
         game.questManager.showNotification("System", "Game saved successfully!");
       }
       return true;
-    } catch (err) {
-      console.error("[SaveManager] Save failed:", err);
+    } catch {
       return false;
     }
   }
@@ -127,8 +126,7 @@ export default class SaveManager {
         game.questManager.showNotification("System", "Game loaded successfully!");
       }
       return saveData;
-    } catch (err) {
-      console.error("[SaveManager] Load failed:", err);
+    } catch {
       return null;
     }
   }
@@ -137,7 +135,6 @@ export default class SaveManager {
    * Periodic auto-save execution.
    */
   static autoSave(game, sceneKey, x, y) {
-    console.log("[SaveManager] Performing auto-save...");
     return this.saveGame(game, sceneKey, x, y);
   }
 }

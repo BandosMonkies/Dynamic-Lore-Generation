@@ -19,6 +19,8 @@ import SaveManager from '../managers/SaveManager.js';
 import { interiorsConfig } from '../data/interiors.js';
 import NPCAIManager from '../managers/NPCAIManager.js';
 import GameStateManager from '../managers/GameStateManager.js';
+import MemoryManager from '../managers/MemoryManager.js';
+import ActionPanelManager from '../managers/ActionPanelManager.js';
 
 export default class BaseVillageScene extends Phaser.Scene {
   constructor(sceneKey, bgKey, collisionKey) {
@@ -151,6 +153,29 @@ export default class BaseVillageScene extends Phaser.Scene {
     if (!this.game.npcAIManager) {
       this.game.npcAIManager = new NPCAIManager(this.game);
     }
+
+    // Memory Manager — NPC memory & rumour propagation system
+    if (!this.game.memoryManager) {
+      this.game.memoryManager = new MemoryManager(this.game);
+    }
+
+    // Action Panel Manager — interactive action simulation panel
+    if (!this.game.actionPanel) {
+      this.game.actionPanel = new ActionPanelManager(this.game);
+      this.game.actionPanel.init();
+    }
+
+    // Tab key: toggle the Action Panel
+    this.keyTab = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TAB);
+    this.keyTab.on('down', (event) => {
+      // Don't open if dialogue is active
+      if (this.dialogueManager && this.dialogueManager.isDialogueActive) return;
+      // Prevent browser default tab-focus behavior
+      event.originalEvent.preventDefault();
+      if (this.game.actionPanel) {
+        this.game.actionPanel.toggle(this.game);
+      }
+    });
 
     // Game State Manager — broadcasts live state to the developer dashboard
     if (!this.game.gameStateManager) {
@@ -285,6 +310,12 @@ export default class BaseVillageScene extends Phaser.Scene {
       // If quest log is open, block updates but still run player to update animations
       if (this.game.questManager && this.game.questManager.isLogActive) {
         runMenuUpdates();
+        return;
+      }
+
+      // If action panel is open, block updates but still run player to update animations
+      if (this.game.actionPanel && this.game.actionPanel.isPanelActive) {
+        this.player.update(time, delta);
         return;
       }
 
@@ -565,14 +596,12 @@ export default class BaseVillageScene extends Phaser.Scene {
         this.dialogueManager.startAIDialogue(npc, aiResponse, onDialogueComplete);
       } else {
         // AI returned null or empty — fall back to static dialogue
-        console.warn(`[Scene] AI response empty for "${npc.name}" — using static fallback.`);
         this.dialogueManager.hideThinking();
         this.dialogueManager.closeDialogue();
         this.dialogueManager.startDialogue(dialogueId, npc, onDialogueComplete);
       }
-    } catch (err) {
+    } catch {
       // Network error / timeout — fall back gracefully
-      console.error(`[Scene] AI request threw for "${npc.name}":`, err);
       this.dialogueManager.hideThinking();
       this.dialogueManager.closeDialogue();
       this.dialogueManager.startDialogue(dialogueId, npc, onDialogueComplete);
