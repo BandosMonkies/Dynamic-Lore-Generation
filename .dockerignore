@@ -1,0 +1,34 @@
+# ── Node / JavaScript ──────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+*.local
+
+# ── Model weights (bind-mounted at runtime, not baked into image) ─────────────
+ML-MODEL-SERVER/Qwen-NPC-INT4/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+*.sw?
+*.log
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# Don't recurse into the ML server directory from root context
+# (it has its own Dockerfile / .dockerignore)
+ML-MODEL-SERVER/

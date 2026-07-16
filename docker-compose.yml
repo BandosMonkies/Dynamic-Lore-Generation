@@ -1,0 +1,83 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.yml — Final_Prototype
+#
+# Services:
+#   ml-server  — Qwen NPC AI Flask server  (Python, port 5000)
+#   frontend   — Vite + Phaser game        (Node,   port 3000)
+#
+# Usage:
+#   docker compose up --build          # build & start both
+#   docker compose up --build -d       # detached (background)
+#   docker compose logs -f ml-server   # follow ML server logs
+#   docker compose down                # stop & remove containers
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Python Flask ML server ──────────────────────────────────────────────────
+  ml-server:
+    build:
+      context: ./ML-MODEL-SERVER
+      dockerfile: Dockerfile
+    container_name: npc-ai-server
+
+    # ── GPU passthrough (requires nvidia-container-toolkit on host) ───────────
+    # If you don't have an NVIDIA GPU / toolkit, comment out the `deploy` block
+    # below. The model will run on CPU — very slow but functional.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    # ── Port mapping ──────────────────────────────────────────────────────────
+    ports:
+      - "5000:5000"
+
+    # ── Model weights volume ──────────────────────────────────────────────────
+    # The Qwen-NPC-INT4 folder is bind-mounted read-only from the host.
+    # This keeps the Docker image portable (~2 GB weights stay on disk).
+    volumes:
+      - ./ML-MODEL-SERVER/Qwen-NPC-INT4:/app/Qwen-NPC-INT4:ro
+
+    # ── Environment ───────────────────────────────────────────────────────────
+    environment:
+      - PYTHONUNBUFFERED=1          # see Python logs in real-time
+      - PYTHONDONTWRITEBYTECODE=1   # no .pyc files
+
+    # ── Networking ────────────────────────────────────────────────────────────
+    networks:
+      - game-net
+
+    restart: unless-stopped
+
+  # ── Node / Vite frontend ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phaser-frontend
+
+    # ── Port mapping ──────────────────────────────────────────────────────────
+    ports:
+      - "3000:3000"
+
+    # ── Wait for ML server health-check before starting ───────────────────────
+    # The game gracefully handles ml-server being offline, but this gives the
+    # model time to load before the browser tries /health.
+    depends_on:
+      ml-server:
+        condition: service_healthy
+
+    # ── Networking ────────────────────────────────────────────────────────────
+    networks:
+      - game-net
+
+    restart: unless-stopped
+
+# ── Shared network ────────────────────────────────────────────────────────────
+networks:
+  game-net:
+    driver: bridge

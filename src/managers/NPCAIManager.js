@@ -177,7 +177,7 @@ export default class NPCAIManager {
       : '';
 
     // ── Trigger event: describe what the player did ────────────────────────
-    const triggerEvent = `${playerInfo.name} approached and initiated conversation with ${npc.name}.`;
+    const triggerEvent = `${playerInfo.name} approached and initiated conversation with ${npc.name}. He expect you to talk about his recent actions.`;
 
     return {
       npc: npcInfo,

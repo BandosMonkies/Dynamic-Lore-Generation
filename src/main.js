@@ -5,7 +5,7 @@ import Village2Scene from './scenes/Village2Scene.js';
 import Village3Scene from './scenes/Village3Scene.js';
 import ArcheryBarracksScene from './scenes/ArcheryBarracksScene.js';
 import BuildingScene from './scenes/BuildingScene.js';
-//saketh
+
 const config = {
   type: Phaser.AUTO,
   parent: 'game-container',

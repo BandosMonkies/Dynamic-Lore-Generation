@@ -1,0 +1,21 @@
+# Qwen-NPC-INT4 weights — these are bind-mounted from host, not copied
+Qwen-NPC-INT4/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+
+# virtual envs
+.venv/
+venv/
+env/
+
+# OS / IDE
+.DS_Store
+.idea/
+*.sw?
