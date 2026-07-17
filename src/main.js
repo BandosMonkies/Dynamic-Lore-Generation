@@ -11,7 +11,7 @@ const config = {
   parent: 'game-container',
   backgroundColor: '#000000',
   scale: {
-    mode: Phaser.Scale.RESIZE,      // Canvas resizes to fill the parent container
+    mode: Phaser.Scale.RESIZE,      
     autoCenter: Phaser.Scale.NO_CENTER,
     width: '100%',
     height: '100%',
